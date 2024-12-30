@@ -9,7 +9,7 @@ export default class OpenAILikeProvider extends BaseProvider {
 
   config = {
     baseUrlKey: 'OPENAI_LIKE_API_BASE_URL',
-    apiTokenKey: 'OPENAI_LIKE_API_KEY',
+    apiTokenKey: 'GLHF_KEY',
   };
 
   staticModels: ModelInfo[] = [];
@@ -25,7 +25,7 @@ export default class OpenAILikeProvider extends BaseProvider {
         providerSettings: settings,
         serverEnv,
         defaultBaseUrlKey: 'OPENAI_LIKE_API_BASE_URL',
-        defaultApiTokenKey: 'OPENAI_LIKE_API_KEY',
+        defaultApiTokenKey: 'GLHF_KEY',
       });
 
       if (!baseUrl || !apiKey) {
@@ -65,7 +65,7 @@ export default class OpenAILikeProvider extends BaseProvider {
       providerSettings: providerSettings?.[this.name],
       serverEnv: serverEnv as any,
       defaultBaseUrlKey: 'OPENAI_LIKE_API_BASE_URL',
-      defaultApiTokenKey: 'OPENAI_LIKE_API_KEY',
+      defaultApiTokenKey: 'GLHF_KEY',
     });
 
     if (!baseUrl || !apiKey) {
