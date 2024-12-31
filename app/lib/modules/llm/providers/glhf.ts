@@ -1,5 +1,4 @@
 import { BaseProvider } from '~/lib/modules/llm/base-provider';
-import type { ModelInfo } from '~/lib/modules/llm/types';
 import type { IProviderSetting } from '~/types/model';
 import type { LanguageModelV1 } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
@@ -12,7 +11,7 @@ export default class GlhfProvider extends BaseProvider {
     apiTokenKey: 'GLHF_API_KEY',
   };
 
-  staticModels: ModelInfo[] = [
+  staticModels = [
     { name: 'hf:Qwen/Qwen2.5-Coder-32B-Instruct', label: 'Qwen 2.5 Coder 32B Instruct', provider: 'HF', maxTokenAllowed: 8000 },
     { name: 'hf:meta-llama/Llama-3.1-405B-Instruct', label: 'Llama 3.1 405B Instruct', provider: 'HF', maxTokenAllowed: 8000 },
     { name: 'hf:meta-llama/Llama-3.1-70B-Instruct', label: 'Llama 3.1 70B Instruct', provider: 'HF', maxTokenAllowed: 8000 },
@@ -57,6 +56,12 @@ export default class GlhfProvider extends BaseProvider {
       baseURL: 'https://glhf.chat/api/openai/v1',
       apiKey,
     });
+
+    // Use the static model list directly
+    const modelInfo = this.staticModels.find((m) => m.name === model);
+    if (!modelInfo) {
+      throw new Error(`Model ${model} is not supported by ${this.name} provider`);
+    }
 
     return openai(model);
   }
