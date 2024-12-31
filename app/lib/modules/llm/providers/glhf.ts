@@ -1,16 +1,18 @@
-import { BaseProvider } from '~/lib/modules/llm/base-provider';
+import { BaseProvider, getOpenAILikeModel } from '~/lib/modules/llm/base-provider';
+import type { ModelInfo } from '~/lib/modules/llm/types';
+import type { IProviderSetting } from '~/types/model';
 import type { LanguageModelV1 } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
 
 export default class GlhfProvider extends BaseProvider {
   name = 'GLHF';
-  getApiKeyLink = 'https://glhf.chat/users/settings/api';
+  getApiKeyLink = undefined;
 
   config = {
+    baseUrlKey: 'https://glhf.chat/api/openai/v1',
     apiTokenKey: 'GLHF_API_KEY',
   };
 
-  staticModels = [
+  staticModels: ModelInfo[] = [
     { name: 'hf:Qwen/Qwen2.5-Coder-32B-Instruct', label: 'Qwen 2.5 Coder 32B Instruct', provider: 'HF', maxTokenAllowed: 8000 },
     { name: 'hf:meta-llama/Llama-3.1-405B-Instruct', label: 'Llama 3.1 405B Instruct', provider: 'HF', maxTokenAllowed: 8000 },
     { name: 'hf:meta-llama/Llama-3.1-70B-Instruct', label: 'Llama 3.1 70B Instruct', provider: 'HF', maxTokenAllowed: 8000 },
@@ -31,37 +33,64 @@ export default class GlhfProvider extends BaseProvider {
     { name: 'hf:nvidia/Llama-3.1-Nemotron-70B-Instruct-HF', label: 'Llama 3.1 Nemotron 70B Instruct', provider: 'HF', maxTokenAllowed: 8000 }
   ];
 
+  async getDynamicModels(
+    apiKeys?: Record<string, string>,
+    settings?: IProviderSetting,
+    serverEnv: Record<string, string> = {},
+  ): Promise<ModelInfo[]> {
+    try {
+      const { baseUrl, apiKey } = this.getProviderBaseUrlAndKey({
+        apiKeys,
+        providerSettings: settings,
+        serverEnv,
+        defaultBaseUrlKey: 'https://glhf.chat/api/openai/v1',
+        defaultApiTokenKey: 'GLHF_API_KEY',
+      });
+
+      if (!baseUrl || !apiKey) {
+        return [];
+      }
+
+      const response = await fetch(`${baseUrl}/models`, {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+      });
+
+      const res = (await response.json()) as any;
+
+      return res.data.map((model: any) => ({
+        name: model.id,
+        label: model.id,
+        provider: this.name,
+        maxTokenAllowed: 8000,
+      }));
+    } catch (error) {
+      console.error('Error getting OpenAILike models:', error);
+      return [];
+    }
+  }
+
   getModelInstance(options: {
     model: string;
     serverEnv: Env;
     apiKeys?: Record<string, string>;
-    providerSettings?: Record<string, any>;
+    providerSettings?: Record<string, IProviderSetting>;
   }): LanguageModelV1 {
     const { model, serverEnv, apiKeys, providerSettings } = options;
 
-    const { apiKey } = this.getProviderBaseUrlAndKey({
+    const { baseUrl, apiKey } = this.getProviderBaseUrlAndKey({
       apiKeys,
       providerSettings: providerSettings?.[this.name],
       serverEnv: serverEnv as any,
-      defaultBaseUrlKey: '',
+      defaultBaseUrlKey: 'https://glhf.chat/api/openai/v1',
       defaultApiTokenKey: 'GLHF_API_KEY',
     });
 
-    if (!apiKey) {
-      throw new Error(`Missing API key for ${this.name} provider`);
+    if (!baseUrl || !apiKey) {
+      throw new Error(`Missing configuration for ${this.name} provider`);
     }
 
-    const openai = createOpenAI({
-      baseURL: 'https://glhf.chat/api/openai/v1',
-      apiKey,
-    });
-
-    // Use the static model list directly
-    const modelInfo = this.staticModels.find((m) => m.name === model);
-    if (!modelInfo) {
-      throw new Error(`Model ${model} is not supported by ${this.name} provider`);
-    }
-
-    return openai(model);
+    return getOpenAILikeModel(baseUrl, apiKey, model);
   }
 }
