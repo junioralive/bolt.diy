@@ -3,6 +3,7 @@ import CohereProvider from './providers/cohere';
 import DeepseekProvider from './providers/deepseek';
 import GoogleProvider from './providers/google';
 import GroqProvider from './providers/groq';
+import GlhfProvider from './providers/glhf';
 import HuggingFaceProvider from './providers/huggingface';
 import LMStudioProvider from './providers/lmstudio';
 import MistralProvider from './providers/mistral';
@@ -21,6 +22,7 @@ export {
   DeepseekProvider,
   GoogleProvider,
   GroqProvider,
+  GlhfProvider,
   HuggingFaceProvider,
   HyperbolicProvider,
   MistralProvider,
