@@ -6,7 +6,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 
 export default class GlhfProvider extends BaseProvider {
   name = 'GLHF';
-  getApiKeyLink = 'https://console.groq.com/keys';
+  getApiKeyLink = 'https://glhf.chat/users/settings/api';
 
   config = {
     apiTokenKey: 'GLHF_API_KEY',

@@ -18,3 +18,5 @@ interface Env {
   XAI_API_KEY: string;
   PERPLEXITY_API_KEY: string;
 }
+	
+added missing icons for safari
